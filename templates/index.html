@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Disease Prediction System</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="theme-light">
+
+    <!-- Top Navigation Bar -->
+    <header class="app-header">
+        <div class="header-container">
+            <!-- Brand -->
+            <div class="brand">
+                <div class="brand-icon">
+                    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                    </svg>
+                </div>
+                <div class="brand-title">Disease Prediction System</div>
+            </div>
+
+            <!-- Simple Navigation Tabs -->
+            <nav class="nav-links">
+                <button class="nav-btn active" data-tab="predict">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                    Predict Disease
+                </button>
+                <button class="nav-btn" data-tab="compare">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                    Model Comparison
+                </button>
+                <button class="nav-btn" data-tab="batch">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M12 18v-6"/><path d="M9 15l3 3 3-3"/></svg>
+                    Batch CSV
+                </button>
+                <button class="nav-btn" data-tab="about">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                    Datasets
+                </button>
+            </nav>
+
+            <!-- Actions -->
+            <div class="header-right">
+                <button id="themeToggleBtn" class="icon-btn" title="Toggle Dark/Light Mode">
+                    <svg id="themeMoonIcon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="main-container">
+
+        <!-- ============================================== -->
+        <!-- TAB 1: PREDICT DISEASE (MAIN INTERFACE)        -->
+        <!-- ============================================== -->
+        <section id="tab-predict" class="tab-content active">
+
+            <!-- Simple Disease Selector Bar -->
+            <div class="disease-switch-bar">
+                <div class="switch-title">Select Disease:</div>
+                <div class="disease-buttons">
+                    <button class="disease-btn active" data-disease="heart">
+                        <span class="disease-btn-icon">❤️</span>
+                        <span class="disease-btn-name">Heart Disease</span>
+                    </button>
+                    <button class="disease-btn" data-disease="diabetes">
+                        <span class="disease-btn-icon">🩸</span>
+                        <span class="disease-btn-name">Diabetes</span>
+                    </button>
+                    <button class="disease-btn" data-disease="breast_cancer">
+                        <span class="disease-btn-icon">🔬</span>
+                        <span class="disease-btn-name">Breast Cancer</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 2-Column Flexible Layout -->
+            <div class="predict-layout">
+
+                <!-- Left Column: Input Form -->
+                <div class="card form-card">
+                    <!-- Card Header -->
+                    <div class="card-header">
+                        <div>
+                            <h2 class="card-title" id="diseaseFormTitle">Heart Disease Prediction</h2>
+                            <p class="card-subtitle" id="diseaseFormSub">Enter patient vitals and clinical measurements</p>
+                        </div>
+                        <div class="model-picker">
+                            <label for="modelSelect">Algorithm:</label>
+                            <select id="modelSelect" class="form-select">
+                                <option value="ensemble" selected>Ensemble (All Models)</option>
+                                <option value="random_forest">Random Forest</option>
+                                <option value="xgboost">XGBoost</option>
+                                <option value="svm">Support Vector Machine (SVM)</option>
+                                <option value="logistic_regression">Logistic Regression</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Preset Samples -->
+                    <div class="preset-bar">
+                        <span class="preset-title">Fill with Sample Data:</span>
+                        <div id="presetButtonsContainer" class="preset-list">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- Form Inputs -->
+                    <form id="patientForm" class="patient-form">
+                        <div id="dynamicFormFields" class="form-fields-grid">
+                            <!-- Dynamically populated fields -->
+                        </div>
+
+                        <!-- Submit Bar -->
+                        <div class="form-actions">
+                            <button type="submit" id="runDiagnosisBtn" class="btn btn-primary">
+                                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                                <span>Predict Risk</span>
+                            </button>
+                            <button type="button" id="resetFormBtn" class="btn btn-outline">Reset</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Right Column: Results Card -->
+                <div class="card result-card">
+                    <div class="card-header">
+                        <h2 class="card-title">Prediction Result</h2>
+                        <span id="resultTimestamp" class="timestamp-tag">Ready</span>
+                    </div>
+
+                    <!-- Loading State -->
+                    <div id="resultLoading" class="loading-state" style="display: none;">
+                        <div class="simple-spinner"></div>
+                        <p>Calculating risk score...</p>
+                    </div>
+
+                    <!-- Result Content -->
+                    <div id="resultContent" class="result-body">
+                        <!-- Big Risk Status Box -->
+                        <div id="riskStatusBox" class="risk-status-box status-normal">
+                            <div class="risk-score-display">
+                                <span id="riskScoreVal" class="score-number">--</span>
+                                <span class="score-unit">%</span>
+                            </div>
+                            <div class="risk-meta">
+                                <span id="riskTierBadge" class="tag tag-normal">LOW RISK</span>
+                                <h3 id="diagnosisLabel" class="risk-heading">Fill patient data to predict</h3>
+                                <p id="urgencyLabel" class="risk-sub">The prediction likelihood will be displayed here.</p>
+                            </div>
+                        </div>
+
+                        <!-- Model Comparison Mini Breakdown -->
+                        <div class="section-box">
+                            <div class="section-header">
+                                <h4 class="section-heading">Algorithm Comparison</h4>
+                                <span id="consensusRate" class="sub-tag">Consensus: --%</span>
+                            </div>
+                            <div id="consensusGrid" class="models-grid">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+
+                        <!-- Top Risk Factors -->
+                        <div class="section-box">
+                            <h4 class="section-heading">Key Influencing Factors</h4>
+                            <div id="featureImpactList" class="factors-list">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+
+                        <!-- Recommendations -->
+                        <div class="section-box">
+                            <h4 class="section-heading">Recommendations</h4>
+                            <ul id="recommendationsList" class="simple-list">
+                                <li>Select a sample case or enter values to view clinical recommendations.</li>
+                            </ul>
+                        </div>
+
+                        <!-- PDF Export Button -->
+                        <button id="downloadPdfBtn" class="btn btn-secondary btn-full">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            Download PDF Diagnostic Report
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ============================================== -->
+        <!-- TAB 2: MODEL COMPARISON (SVM, LR, RF, XGB)     -->
+        <!-- ============================================== -->
+        <section id="tab-compare" class="tab-content">
+            <div class="section-intro">
+                <div>
+                    <h2 class="page-title">Model Comparison & Benchmarks</h2>
+                    <p class="page-subtitle">Evaluating SVM, Logistic Regression, Random Forest, and XGBoost on test datasets</p>
+                </div>
+                <div class="inline-select">
+                    <label for="labDiseaseSelect">Disease:</label>
+                    <select id="labDiseaseSelect" class="form-select">
+                        <option value="heart" selected>Heart Disease</option>
+                        <option value="diabetes">Diabetes</option>
+                        <option value="breast_cancer">Breast Cancer</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Summary KPI Cards -->
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-label">Best Accuracy</div>
+                    <div id="metricBestAcc" class="kpi-value">--%</div>
+                    <div id="metricBestAccModel" class="kpi-sub">--</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Highest ROC-AUC</div>
+                    <div id="metricBestAuc" class="kpi-value">--</div>
+                    <div id="metricBestAucModel" class="kpi-sub">--</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">Sensitivity (Recall)</div>
+                    <div id="metricBestRecall" class="kpi-value">--%</div>
+                    <div id="metricBestRecallModel" class="kpi-sub">--</div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-label">5-Fold Cross Validation</div>
+                    <div id="metricBestCv" class="kpi-value">--</div>
+                    <div class="kpi-sub">Mean Test AUC</div>
+                </div>
+            </div>
+
+            <!-- Comparison Table -->
+            <div class="card table-card">
+                <h3 class="card-title">Performance Metrics</h3>
+                <div class="table-container">
+                    <table class="simple-table">
+                        <thead>
+                            <tr>
+                                <th>Model</th>
+                                <th>Accuracy</th>
+                                <th>Precision</th>
+                                <th>Recall</th>
+                                <th>Specificity</th>
+                                <th>F1 Score</th>
+                                <th>ROC-AUC</th>
+                                <th>5-Fold CV</th>
+                            </tr>
+                        </thead>
+                        <tbody id="benchmarkTableBody">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Charts: ROC and Feature Importance -->
+            <div class="charts-row">
+                <div class="card chart-card">
+                    <div class="card-header">
+                        <h3 class="card-title">ROC Curves</h3>
+                    </div>
+                    <div class="chart-box">
+                        <canvas id="rocChartCanvas"></canvas>
+                    </div>
+                </div>
+
+                <div class="card chart-card">
+                    <div class="card-header">
+                        <h3 class="card-title">Feature Importance</h3>
+                    </div>
+                    <div class="chart-box">
+                        <canvas id="featureImportanceCanvas"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Confusion Matrix -->
+            <div class="card cm-card">
+                <div class="card-header">
+                    <h3 class="card-title">Confusion Matrix</h3>
+                    <div class="inline-select">
+                        <label for="cmModelSelect">Model:</label>
+                        <select id="cmModelSelect" class="form-select">
+                            <option value="ensemble">Ensemble</option>
+                            <option value="random_forest">Random Forest</option>
+                            <option value="xgboost">XGBoost</option>
+                            <option value="svm">SVM</option>
+                            <option value="logistic_regression">Logistic Regression</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="cm-grid-layout">
+                    <div class="cm-table">
+                        <div class="cm-row-header"></div>
+                        <div class="cm-col-header">Predicted Normal</div>
+                        <div class="cm-col-header">Predicted Disease</div>
+
+                        <div class="cm-row-label">Actual Normal</div>
+                        <div id="cmTN" class="cm-box cm-box-good">
+                            <span class="cm-val">--</span>
+                            <span class="cm-desc">True Negative</span>
+                        </div>
+                        <div id="cmFP" class="cm-box cm-box-warn">
+                            <span class="cm-val">--</span>
+                            <span class="cm-desc">False Positive</span>
+                        </div>
+
+                        <div class="cm-row-label">Actual Disease</div>
+                        <div id="cmFN" class="cm-box cm-box-danger">
+                            <span class="cm-val">--</span>
+                            <span class="cm-desc">False Negative</span>
+                        </div>
+                        <div id="cmTP" class="cm-box cm-box-good">
+                            <span class="cm-val">--</span>
+                            <span class="cm-desc">True Positive</span>
+                        </div>
+                    </div>
+
+                    <div class="cm-info">
+                        <h4>Diagnostic Summary</h4>
+                        <div class="info-row">
+                            <span>Sensitivity (Recall):</span>
+                            <strong id="cmSensitivityVal">--%</strong>
+                        </div>
+                        <div class="info-row">
+                            <span>Specificity:</span>
+                            <strong id="cmSpecificityVal">--%</strong>
+                        </div>
+                        <div class="info-row">
+                            <span>False Discovery Rate:</span>
+                            <strong id="cmFdrVal">--%</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================== -->
+        <!-- TAB 3: BATCH PREDICTION (CSV UPLOAD)          -->
+        <!-- ============================================== -->
+        <section id="tab-batch" class="tab-content">
+            <div class="section-intro">
+                <div>
+                    <h2 class="page-title">Batch CSV Prediction</h2>
+                    <p class="page-subtitle">Upload a patient records CSV file to predict disease risk in bulk</p>
+                </div>
+            </div>
+
+            <!-- Upload Controls -->
+            <div class="card batch-card">
+                <div class="batch-bar">
+                    <div class="inline-select">
+                        <label for="batchDiseaseSelect">Target Disease:</label>
+                        <select id="batchDiseaseSelect" class="form-select">
+                            <option value="heart" selected>Heart Disease</option>
+                            <option value="diabetes">Diabetes</option>
+                            <option value="breast_cancer">Breast Cancer</option>
+                        </select>
+                    </div>
+
+                    <div class="inline-select">
+                        <label for="batchModelSelect">Model:</label>
+                        <select id="batchModelSelect" class="form-select">
+                            <option value="ensemble" selected>Ensemble</option>
+                            <option value="random_forest">Random Forest</option>
+                            <option value="xgboost">XGBoost</option>
+                            <option value="svm">SVM</option>
+                            <option value="logistic_regression">Logistic Regression</option>
+                        </select>
+                    </div>
+
+                    <div class="batch-buttons">
+                        <button id="batchSampleRunBtn" class="btn btn-primary">
+                            <span>Try Sample CSV (20 Patients)</span>
+                        </button>
+                        <a id="batchDownloadSampleLink" href="/api/download-sample-batch/heart" class="btn btn-outline" download>
+                            <span>Download Template CSV</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Drop Zone -->
+                <div id="dropZone" class="upload-zone">
+                    <input type="file" id="batchFileInput" accept=".csv" class="file-hidden">
+                    <svg viewBox="0 0 24 24" width="38" height="38" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="17 8 12 3 7 8"/>
+                        <line x1="12" y1="3" x2="12" y2="15"/>
+                    </svg>
+                    <p class="upload-title">Drop your CSV file here, or <span>browse</span></p>
+                    <p class="upload-sub">Supports structured CSV files matching the dataset features</p>
+                </div>
+            </div>
+
+            <!-- Batch Results (hidden until executed) -->
+            <div id="batchResultsWrapper" class="batch-results-box" style="display: none;">
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-label">Total Patients</div>
+                        <div id="batchTotalCount" class="kpi-value">0</div>
+                    </div>
+                    <div class="kpi-card kpi-danger">
+                        <div class="kpi-label">High Risk</div>
+                        <div id="batchHighCount" class="kpi-value">0</div>
+                        <div id="batchHighPct" class="kpi-sub">0% of total</div>
+                    </div>
+                    <div class="kpi-card kpi-warning">
+                        <div class="kpi-label">Moderate Risk</div>
+                        <div id="batchModCount" class="kpi-value">0</div>
+                    </div>
+                    <div class="kpi-card kpi-success">
+                        <div class="kpi-label">Low Risk</div>
+                        <div id="batchLowCount" class="kpi-value">0</div>
+                    </div>
+                </div>
+
+                <div class="card table-card">
+                    <div class="card-header">
+                        <h3 class="card-title">Patient Predictions</h3>
+                        <button id="batchExportCsvBtn" class="btn btn-outline btn-sm">
+                            Export Results CSV
+                        </button>
+                    </div>
+                    <div class="table-container">
+                        <table class="simple-table">
+                            <thead>
+                                <tr>
+                                    <th>Patient ID</th>
+                                    <th>Risk Score</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                    <th>Key Values</th>
+                                </tr>
+                            </thead>
+                            <tbody id="batchTableBody">
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================================== -->
+        <!-- TAB 4: DATASETS & PROVENANCE                   -->
+        <!-- ============================================== -->
+        <section id="tab-about" class="tab-content">
+            <div class="section-intro">
+                <div>
+                    <h2 class="page-title">Datasets & Medical Provenance</h2>
+                    <p class="page-subtitle">Standard medical benchmark datasets from the UCI Machine Learning Repository</p>
+                </div>
+            </div>
+
+            <div class="dataset-grid">
+                <!-- Heart Disease -->
+                <div class="card dataset-box">
+                    <span class="dataset-tag">Cardiology</span>
+                    <h3 class="card-title">Heart Disease Dataset</h3>
+                    <p class="dataset-text">From the Cleveland Clinic Foundation (Detrano et al.). Predicts presence of coronary artery stenosis from 13 clinical biomarkers.</p>
+                    <ul class="dataset-meta">
+                        <li><strong>Records:</strong> 303 patients</li>
+                        <li><strong>Features:</strong> Age, Gender, Blood Pressure, Cholesterol, ECG, Max Heart Rate, etc.</li>
+                        <li><strong>Target:</strong> Disease Present (139) vs Normal (164)</li>
+                    </ul>
+                </div>
+
+                <!-- Diabetes -->
+                <div class="card dataset-box">
+                    <span class="dataset-tag">Endocrinology</span>
+                    <h3 class="card-title">Pima Indians Diabetes</h3>
+                    <p class="dataset-text">From the National Institute of Diabetes and Digestive and Kidney Diseases (NIDDK). Predicts onset of diabetes based on diagnostic test measures.</p>
+                    <ul class="dataset-meta">
+                        <li><strong>Records:</strong> 768 patients</li>
+                        <li><strong>Features:</strong> Glucose, Blood Pressure, Insulin, BMI, Age, Pregnancies, etc.</li>
+                        <li><strong>Target:</strong> Diabetic (268) vs Non-diabetic (500)</li>
+                    </ul>
+                </div>
+
+                <!-- Breast Cancer -->
+                <div class="card dataset-box">
+                    <span class="dataset-tag">Oncology</span>
+                    <h3 class="card-title">Breast Cancer Wisconsin (Diagnostic)</h3>
+                    <p class="dataset-text">From the University of Wisconsin Hospitals (Wolberg, Street, Mangasarian). Predicts whether a tumor biopsy is Benign or Malignant.</p>
+                    <ul class="dataset-meta">
+                        <li><strong>Records:</strong> 569 cases</li>
+                        <li><strong>Features:</strong> Mean Radius, Texture, Perimeter, Area, Smoothness, Concavity, etc.</li>
+                        <li><strong>Target:</strong> Malignant (212) vs Benign (357)</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Simple Clean Footer -->
+    <footer class="app-footer">
+        <div class="footer-container">
+            <span>Disease Prediction System • Machine Learning on UCI Medical Datasets</span>
+            <span>SVM • Logistic Regression • Random Forest • XGBoost</span>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="/static/js/charts.js"></script>
+    <script src="/static/js/batch.js"></script>
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
